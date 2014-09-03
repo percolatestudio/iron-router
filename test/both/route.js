@@ -238,6 +238,40 @@ Tinytest.add('Route - params', function (test) {
   params = route.params('/commits/123..456');
   test.equal(params[0], '123');
   test.equal(params[1], '456');
+
+  route = new Route(Router, 'simpleOptional', {
+    path: paths.simpleOptional
+  });
+
+  params = route.params('/?a=b');
+  test.equal(params.a, 'b');
+
+  params = route.params('/?a=x&b=y&c=z');
+  test.equal(params.a, 'x');
+  test.equal(params.b, 'y');
+  test.equal(params.c, 'z');
+
+  params = route.params('/?a=x&a=y&a=z');
+  test.equal(params.a, ['x', 'y', 'z']);
+
+  params = route.params('/?a=x&a=y&foo=bar&a=z');
+  test.equal(params.a, ['x', 'y', 'z']);
+  test.equal(params.foo, 'bar');
+
+  params = route.params('/?a=1&a=2&a=3');
+  test.equal(params.a, ['1', '2', '3']);
+
+  route = new Route(Router, 'required', {
+    path: paths.required
+  });
+
+  params = route.params('/posts/1/?a=b');
+  queryParams = route.params('/posts/1/?a=b');
+
+  test.equal(params.param, '1');
+  test.equal(params.a, 'b');
+  test.equal(queryParams.param, '1');
+  test.equal(queryParams.a, 'b');
 });
 
 Tinytest.add('Route - params with query and hash', function (test) {
@@ -387,6 +421,17 @@ Tinytest.add('Route - resolve', function (test) {
   });
   params = ['some/file/path'];
   test.equal(route.resolve(params), '/posts/some/file/path');
+
+  route = new Route(Router, 'simpleOptional', {
+    path: paths.simpleOptional
+  });
+
+  options = {
+    query: {
+      a: [1,2,3]
+    }
+  };
+  test.equal(route.resolve({}, options), '/?a=1&a=2&a=3');
 });
 
 Tinytest.add('Route - normalizePath', function (test) {
